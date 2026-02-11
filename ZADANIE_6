@@ -1,0 +1,57 @@
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Введите x (|x| < 1): ");
+        double x = scanner.nextDouble();
+
+        System.out.print("Введите n: ");
+        int n = scanner.nextInt();
+
+        System.out.print("Введите e: ");
+        double e = scanner.nextDouble();
+
+        if (Math.abs(x) >= 1) {
+            System.out.println("Ошибка: |x| должно быть меньше 1");
+            return;
+        }
+
+        double sumN = 0;        // 1) сумма n членов
+        double sumE = 0;        // 2) сумма членов > e
+        double sumE10 = 0;      // 3) сумма членов > e/10
+
+        double a = x;           // a0 = x
+        int k = 0;
+
+        for (int i = 0; i < n; i++) {
+
+            // 1) сумма n слагаемых
+            sumN += a;
+
+            // 2) |an| > e
+            if (Math.abs(a) > e) {
+                sumE += a;
+            }
+
+            // 3) |an| > e/10
+            if (Math.abs(a) > e / 10) {
+                sumE10 += a;
+            }
+
+            // вычисление следующего члена через предыдущий
+            k++;
+            a = a * (-x * x) * (2.0 * k - 1) / (2.0 * k + 1);
+        }
+
+        double mathValue = Math.atan(x);
+
+        System.out.println("\nРезультаты:");
+        System.out.println("1) Сумма n членов: " + sumN);
+        System.out.println("2) Сумма членов |an| > e: " + sumE);
+        System.out.println("3) Сумма членов |an| > e/10: " + sumE10);
+        System.out.println("4) Значение через Math.atan(x): " + mathValue);
+    }
+}
