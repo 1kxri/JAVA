@@ -2,9 +2,6 @@ import java.util.*;
 
 public class Main {
 
-    // ==============================
-    // ЗАДАНИЕ 1
-    // ==============================
     public static int SolutionTask1(int[] arr) {
         if (arr == null || arr.length == 0) return 0;
         if (arr.length == 1) return 1;
@@ -32,87 +29,75 @@ public class Main {
         return maxLen;
     }
 
+    static class Result {
+        int start;
+        int length;
 
-    // ==============================
-    // ЗАДАНИЕ 2
-    // ==============================
-    // Возвращает {позиция, длина}
-    // Если нет подпоследовательности длиной >= 3 → {-1, 0}
-    public static int[] SolutionTask2(int[] arr) {
+        Result(int start, int length) {
+            this.start = start;
+            this.length = length;
+        }
+    }
 
-        if (arr == null || arr.length < 3)
-            return new int[]{-1, 0};
+    public static Result solution(int[] arr) {
 
-        List<int[]> segments = new ArrayList<>();
+        if (arr == null || arr.length == 0)
+            return new Result(-1, 0);
+
+        List<Result> candidates = new ArrayList<>();
 
         int start = 0;
         int length = 1;
 
-        int prevSign = 0;
-
         for (int i = 1; i < arr.length; i++) {
 
-            int diff = arr[i] - arr[i - 1];
-            int sign = Integer.compare(diff, 0);
+            if (i == start + 1) {
 
-            if (sign == 0) {
-                // равные элементы разрывают
-                if (length >= 3)
-                    segments.add(new int[]{start, length});
+                if (arr[i] != arr[i - 1]) {
+                    length++;
+                } else {
+                    candidates.add(new Result(start, length));
+                    start = i;
+                    length = 1;
+                }
 
-                start = i;
-                length = 1;
-                prevSign = 0;
-                continue;
-            }
+            } else {
 
-            if (prevSign == 0) {
-                length++;
-                prevSign = sign;
-            }
-            else if (sign != prevSign) {
-                length++;
-                prevSign = sign;
-            }
-            else {
-                // направление не сменилось — разрыв
-                if (length >= 3)
-                    segments.add(new int[]{start, length});
+                if (arr[i] == arr[i - 2] && arr[i] != arr[i - 1]) {
+                    length++;
+                } else {
+                    candidates.add(new Result(start, length));
+                    start = i - 1;
+                    length = 2;
 
-                start = i - 1;
-                length = 2;
-                prevSign = sign;
+                    if (arr[i] == arr[i - 1]) {
+                        start = i;
+                        length = 1;
+                    }
+                }
             }
         }
 
-        if (length >= 3)
-            segments.add(new int[]{start, length});
+        candidates.add(new Result(start, length));
 
-        if (segments.isEmpty())
-            return new int[]{-1, 0};
-
-        // ищем максимальную длину
         int maxLen = 0;
-        for (int[] s : segments)
-            if (s[1] > maxLen)
-                maxLen = s[1];
+        for (Result r : candidates)
+            maxLen = Math.max(maxLen, r.length);
 
-        List<int[]> maxSegments = new ArrayList<>();
-        for (int[] s : segments)
-            if (s[1] == maxLen)
-                maxSegments.add(s);
+        List<Result> maxList = new ArrayList<>();
+        for (Result r : candidates)
+            if (r.length == maxLen)
+                maxList.add(r);
 
-        // вторая справа
-        if (maxSegments.size() >= 2)
-            return maxSegments.get(maxSegments.size() - 2);
-        else
-            return maxSegments.get(0);
+        if (maxList.isEmpty())
+            return new Result(-1, 0);
+
+        if (maxList.size() == 1)
+            return maxList.get(0);
+
+        return maxList.get(maxList.size() - 2); // вторая справа
     }
 
-
-    // ==============================
-    // ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
-    // ==============================
 
     public static void printArray(int[] arr) {
         System.out.println(Arrays.toString(arr));
@@ -126,16 +111,16 @@ public class Main {
         int result1 = SolutionTask1(arr);
         System.out.println("Задание 1 (макс. монотонная длина): " + result1);
 
-        int[] result2 = SolutionTask2(arr);
+        Result result2 = solution(arr);
 
-        if (result2[0] == -1) {
+        if (result2.start == -1) {
             System.out.println("Задание 2: Подпоследовательность отсутствует");
         } else {
             System.out.println("Задание 2 (позиция, длина): {"
-                    + result2[0] + ", " + result2[1] + "}");
+                    + result2.start + ", " + result2.length + "}");
 
             System.out.print("Подпоследовательность: ");
-            for (int i = result2[0]; i < result2[0] + result2[1]; i++) {
+            for (int i = result2.start; i < result2.start + result2.length; i++) {
                 System.out.print(arr[i] + " ");
             }
             System.out.println();
@@ -144,25 +129,18 @@ public class Main {
         System.out.println("-----------------------------------");
     }
 
-
-    // ==============================
-    // MAIN
-    // ==============================
-
     public static void main(String[] args) {
 
+        runTest(new int[]{4, 6, 1, 2, 1, 2, 3, 2, 3, 5, 4, 7, 4, 1, 5, 1, 5, 6});
+        runTest(new int[]{1, 1, 1, 1});
         runTest(new int[]{1, 2, 3, 4, 5});
-        runTest(new int[]{5, 4, 3, 2, 1});
+        runTest(new int[]{5, 5, 5, 6, 6, 7});
         runTest(new int[]{1});
         runTest(new int[]{});
-        runTest(new int[]{1, 1, 1, 1});
         runTest(new int[]{1, 2, 1, 2, 1, 2});
-        runTest(new int[]{1, 2, 3, 2, 1, 2, 3});
-        runTest(new int[]{4, 6, 1, 2, 1, 2, 3, 2, 3, 5, 4, 7, 4, 1, 5, 1, 5, 6});
-        runTest(new int[]{10, -1, 5, -2, 8, -3});
-        runTest(new int[]{2, 2, 3, 4, 3, 2, 2, 1});
-        runTest(new int[]{100, 90, 80, 85, 70, 75, 60});
-
+        runTest(new int[]{3, 3, 2, 2, 1, 1});
+        runTest(new int[]{1, 2, 2, 3, 3, 4, 4, 5});
+        runTest(new int[]{9, 8, 9, 8, 9, 8, 7});
 
         Scanner scanner = new Scanner(System.in);
 
